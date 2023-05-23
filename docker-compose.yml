@@ -1,0 +1,14 @@
+version: '3.8'
+services:
+  db:
+    container_name: connect-apms-db
+    image: mongo:4.2-bionic
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=123
+    ports:
+      - '27017:27017'
+    volumes:
+      - ./data:/data/db
+      - ./init-db:/docker-entrypoint-initdb.d
