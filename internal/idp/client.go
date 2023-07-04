@@ -3,7 +3,7 @@ package idp
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -36,7 +36,7 @@ func (c *Client) GetSuperiors(
 	defer response.Body.Close()
 
 	var superiorResponseDto SuperiorResponseDto
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return SuperiorResponseDto{}, err
 	}
@@ -55,7 +55,7 @@ func (c *Client) GetOrganization(
 	defer response.Body.Close()
 
 	var organizationDto OrganizationSingleResponseDto
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return OrganizationSingleResponseDto{}, err
 	}
@@ -74,7 +74,7 @@ func (c *Client) GetOrganizationMembers(
 	defer response.Body.Close()
 
 	var organizationMemberDto OrganizationMemberResponseDto
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return OrganizationMemberResponseDto{}, err
 	}
