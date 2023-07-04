@@ -6,14 +6,15 @@ import (
 	"os"
 
 	"github.com/go-chi/jwtauth"
+	"github.com/mrexmelle/connect-apms/internal/idp"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Config struct {
-	Profile        string
 	Db             *mongo.Database
+	IdpClient      *idp.Client
 	TokenAuth      *jwtauth.JWTAuth
 	JwtValidMinute int
 	Port           int
@@ -34,10 +35,12 @@ func New(
 		return Config{}, err
 	}
 
-	db, err := CreateDb("app.datasource")
+	db, err := CreateDb()
 	if err != nil {
 		return Config{}, err
 	}
+
+	idp := CreateIdpClient()
 
 	jwta := CreateTokenAuth("app.security.jwt.secret")
 	jwtvm := viper.GetInt("app.security.jwt.valid-minute")
@@ -45,6 +48,7 @@ func New(
 
 	return Config{
 		Db:             db,
+		IdpClient:      idp,
 		TokenAuth:      jwta,
 		JwtValidMinute: jwtvm,
 		Port:           port,
@@ -59,7 +63,7 @@ func ComposeConfigName(plainConfigName string) string {
 	return fmt.Sprintf("%s-%s", plainConfigName, profile)
 }
 
-func CreateDb(configKey string) (*mongo.Database, error) {
+func CreateDb() (*mongo.Database, error) {
 	var dbName = viper.GetString("app.datasource.dbName")
 	var dns = fmt.Sprintf(
 		"mongodb://%s:%s@%s:%s/%s",
@@ -87,5 +91,13 @@ func CreateTokenAuth(configKey string) *jwtauth.JWTAuth {
 		"HS256",
 		[]byte(viper.GetString(configKey)),
 		nil,
+	)
+}
+
+func CreateIdpClient() *idp.Client {
+	return idp.NewClient(
+		viper.GetString("app.idp.protocol"),
+		viper.GetString("app.idp.host"),
+		viper.GetInt("app.idp.port"),
 	)
 }

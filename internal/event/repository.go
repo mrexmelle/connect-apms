@@ -1,4 +1,4 @@
-package template
+package event
 
 import (
 	"context"
@@ -15,7 +15,7 @@ type Repository struct {
 func NewRepository(cfg *config.Config) *Repository {
 	return &Repository{
 		Config:         cfg,
-		CollectionName: "templates",
+		CollectionName: "events",
 	}
 }
 
@@ -28,30 +28,17 @@ func (r *Repository) Create(req Entity) (Entity, error) {
 	return req, err
 }
 
-func (r *Repository) FindByCode(code string) (Entity, error) {
-	result := r.Config.Db.Collection(r.CollectionName).FindOne(
-		context.Background(),
-		bson.M{"code": code},
-	)
-
-	var response = Entity{}
-	err := result.Decode(&response)
-	return response, err
-}
-
-func (r *Repository) FindAll() ([]Entity, error) {
+func (r *Repository) FindByProposalId(proposalId string) ([]Entity, error) {
 	result, err := r.Config.Db.Collection(r.CollectionName).Find(
 		context.Background(),
-		bson.M{},
+		bson.M{"proposal_id": proposalId},
 	)
+
 	if err != nil {
 		return []Entity{}, err
 	}
 
-	var response []Entity
-	if err = result.All(context.Background(), &response); err != nil {
-		return []Entity{}, err
-	}
-
-	return response, nil
+	var response = []Entity{}
+	err = result.Decode(&response)
+	return response, err
 }

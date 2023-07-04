@@ -5,6 +5,10 @@ app:
     user: apms
     password: apms123
     dbname: apms
+  idp:
+    protocol: http
+    host: 127.0.0.1
+    port: 8080
   security:
     jwt:
       secret: 1nt3rst3ll4r-*-a5tR0

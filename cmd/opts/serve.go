@@ -9,6 +9,9 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/mrexmelle/connect-apms/internal/config"
+	"github.com/mrexmelle/connect-apms/internal/event"
+	"github.com/mrexmelle/connect-apms/internal/proposal"
+	"github.com/mrexmelle/connect-apms/internal/reviewer"
 	"github.com/mrexmelle/connect-apms/internal/template"
 	"go.uber.org/dig"
 )
@@ -35,13 +38,19 @@ func Serve(cmd *cobra.Command, args []string) {
 	container := dig.New()
 	container.Provide(NewConfig)
 
+	container.Provide(event.NewRepository)
 	container.Provide(template.NewRepository)
+	container.Provide(proposal.NewRepository)
 
 	container.Provide(template.NewService)
+	container.Provide(proposal.NewService)
+	container.Provide(reviewer.NewService)
 
 	container.Provide(template.NewController)
+	container.Provide(proposal.NewController)
 
 	process := func(
+		proposalController *proposal.Controller,
 		templateController *template.Controller,
 		config *config.Config,
 	) {
@@ -58,6 +67,11 @@ func Serve(cmd *cobra.Command, args []string) {
 		r.Route("/templates", func(r chi.Router) {
 			r.Get("/", templateController.GetAll)
 			r.Get("/{code}", templateController.GetByCode)
+		})
+
+		r.Route("/proposals", func(r chi.Router) {
+			r.Post("/", proposalController.Create)
+			r.Get("/{id}", proposalController.GetById)
 		})
 
 		err := http.ListenAndServe(fmt.Sprintf(":%d", config.Port), r)
